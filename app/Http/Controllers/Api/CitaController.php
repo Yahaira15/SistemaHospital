@@ -21,16 +21,31 @@ class CitaController extends Controller
      */
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'patient_name' => 'required|string|max:255',
-            'doctor_name' => 'required|string|max:255',
+        try{
+            $data = $request->validate([
+            'patient_name' => 'required|string|max:255|min:1',
+            'doctor_name' => 'required|string|max:255|min:1',
             'date' => 'required|date',
             'time' => 'required',
             'reason' => 'nullable|string',
             'status' => 'required|in:pendiente,realizada,cancelada',    
         ]);
 
-        return Cita::create($data);
+        
+        $cita = Cita::create($data);
+
+        return response()->json([
+            'message' => 'Cita creada correctamente',
+            'cita' => $cita
+        ], 201);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Error de validación',
+                'errors' => $e->errors()
+            ], 422);
+        }
+            
+
     }
 
     /**
@@ -46,6 +61,7 @@ class CitaController extends Controller
      */
     public function update(Request $request, Cita $cita)
     {
+        try {
         $data = $request->validate([
             'patient_name' => 'required|string|max:255',
             'doctor_name' => 'required|string|max:255',
@@ -57,6 +73,15 @@ class CitaController extends Controller
 
         $cita->update($data);
         return $cita;
+        return response()->json([
+            'message' => 'Cita actualizada correctamente'
+        ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Error de validación',
+                'errors' => $e->errors()
+            ], 422);
+        }
     }
 
     /**
